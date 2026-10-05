@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.models import Chunk, Document
+from app.providers.factory import get_llm_provider
 from app.services.chunking import chunk_text
 from app.services.embeddings import (
     cosine_similarity,
@@ -10,7 +11,6 @@ from app.services.embeddings import (
     embed_text,
     serialize_embedding,
 )
-from app.providers.factory import get_llm_provider
 
 
 def ingest_document(db: Session, text: str, source: str) -> tuple[Document, int]:

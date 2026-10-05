@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from app.core.config import get_settings
@@ -22,7 +22,7 @@ def log_prompt(source: str, prompt: str) -> None:
     settings = get_settings()
     path = Path(settings.prompt_log_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    ts = datetime.now(UTC).isoformat(timespec="seconds")
     safe = _redact(prompt)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(f"{ts}\t{source}\t{safe}\n")

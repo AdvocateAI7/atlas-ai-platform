@@ -36,6 +36,7 @@ def test_chat_different_temperatures_not_cached(client, monkeypatch):
     # ISS-2 regression: same message, different temperature must not share cache entry
     monkeypatch.setenv("ENABLE_RESPONSE_CACHE", "true")
     from app.core.config import get_settings
+
     get_settings.cache_clear()
 
     r1 = client.post("/chat", json={"message": "cache test msg", "temperature": 0.1})

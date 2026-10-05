@@ -1,7 +1,3 @@
-import os
-
-import pytest
-
 from app.services.rate_limit import RateLimiter
 
 
@@ -30,6 +26,7 @@ def test_rate_limit_endpoint(client, monkeypatch):
     monkeypatch.setenv("RATE_LIMIT_WINDOW_SECONDS", "60")
     from app.core.config import get_settings
     from app.services import rate_limit as rl_module
+
     get_settings.cache_clear()
     rl_module._limiter = None  # force re-creation with new settings
 
