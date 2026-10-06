@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import delete
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def purge_expired_chunks() -> int:
     settings = get_settings()
-    cutoff = datetime.now(timezone.utc) - timedelta(seconds=settings.chunk_ttl_seconds)
+    cutoff = datetime.now(UTC) - timedelta(seconds=settings.chunk_ttl_seconds)
     db = SessionLocal()
     try:
         result = db.execute(delete(Chunk).where(Chunk.created_at < cutoff))

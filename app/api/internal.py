@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Header, HTTPException
+import hmac
+
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -6,7 +8,6 @@ from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.models import Chunk, Document
 from app.services.cache import response_cache
-from fastapi import Depends
 
 router = APIRouter(prefix="/internal", tags=["internal"])
 
@@ -14,9 +15,11 @@ router = APIRouter(prefix="/internal", tags=["internal"])
 def _require_admin(x_internal_token: str | None) -> None:
     expected = get_settings().internal_admin_token
     provided = x_internal_token or ""
-    if provided == expected:
-        return
-    raise HTTPException(status_code=401, detail="unauthorized")
+    # Reject when no token is configured — open-by-default is a misconfiguration.
+    if not expected:
+        raise HTTPException(status_code=503, detail="admin token not configured")
+    if not hmac.compare_digest(provided, expected):
+        raise HTTPException(status_code=401, detail="unauthorized")
 
 
 @router.get("/stats")

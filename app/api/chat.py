@@ -12,7 +12,7 @@ router = APIRouter(tags=["chat"])
 
 
 class ChatRequest(BaseModel):
-    message: str
+    message: str = Field(min_length=1, max_length=32_000)
     temperature: float = Field(default=0.2, ge=0.0, le=2.0)
 
 
@@ -22,9 +22,8 @@ class ChatResponse(BaseModel):
     cached: bool = False
 
 
-def _cache_key(payload: ChatRequest) -> str:
-    # Intentionally keys only on the message text.
-    return payload.message
+def _cache_key(payload: ChatRequest, provider_name: str) -> str:
+    return f"{provider_name}:{payload.temperature}:{payload.message}"
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -46,13 +45,13 @@ def chat(
     if prompt_logging_enabled():
         log_prompt("chat", payload.message)
 
-    cache_key = _cache_key(payload)
+    provider = get_llm_provider()
+    cache_key = _cache_key(payload, provider.name)
     if cache_enabled():
         cached = response_cache.get(cache_key)
         if cached is not None:
             return ChatResponse(reply=cached, provider="cache", cached=True)
 
-    provider = get_llm_provider()
     reply = provider.complete(message, temperature=payload.temperature)
     if cache_enabled():
         response_cache.set(cache_key, reply, settings.cache_ttl_seconds)
