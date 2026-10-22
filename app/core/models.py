@@ -11,16 +11,9 @@ class Document(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     source: Mapped[str] = mapped_column(String(512), default="upload")
-    filename: Mapped[str | None] = mapped_column(String(512), nullable=True)
-    # null = global document (legacy /documents endpoint); set = session-scoped
-    session_id: Mapped[int | None] = mapped_column(
-        ForeignKey("conversation_sessions.id", ondelete="CASCADE"),
-        nullable=True,
-        index=True,
+ DateTime(timezone=True), server_default=func.now()
     )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     chunks: Mapped[list["Chunk"]] = relationship(
         back_populates="document", cascade="all, delete-orphan"
